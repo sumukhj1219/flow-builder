@@ -7,12 +7,14 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/sidebar/app-sidebar";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
 import { Separator } from '@/components/ui/separator';
+import EdgeOptionsMenu from '@/components/tools/edit-edge';
 
 const FlowLayout = ({ children }: { children: React.ReactNode }) => {
-    const { nodes, edges, selectNode, onNodesChange, onEdgesChange, onConnect } = useTools()
+    const { nodes, edges, selectNode, onNodesChange, onEdgesChange, onConnect, onEdgeClick, setMenuPosition, selectedEdgeId } = useTools()
     const styledEdges = edges.map(edge => ({
         ...edge,
-        markerEnd: { type: MarkerType.Arrow } 
+        markerEnd: { type: MarkerType.Arrow } ,
+        interactive:true,
     }));
     return (
         <SidebarProvider>
@@ -42,15 +44,24 @@ const FlowLayout = ({ children }: { children: React.ReactNode }) => {
                     nodes={nodes}
                     edges={styledEdges}
                     onNodeClick={(_, node) => selectNode(node.id)}
+                    onEdgeClick={(event, edge) => {
+                      event.preventDefault()
+                      onEdgeClick(edge)
+                      setMenuPosition(event.clientX, event.clientY)
+                  }}
                     onNodesChange={onNodesChange}
                     onEdgesChange={onEdgesChange}
                     onConnect={onConnect}
                     connectionLineType={ConnectionLineType.Bezier}
+                    elementsSelectable={true}
                 >
                     <Background />
                     <Controls className='text-black' />
                     {children}
                 </ReactFlow>
+                {
+                    selectedEdgeId && <EdgeOptionsMenu />
+                }
             </div>
         </SidebarInset>
       </SidebarProvider>
