@@ -3,8 +3,10 @@ import React from 'react'
 import { ReactFlow, Controls, Background, ConnectionLineType, MarkerType } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import { useTools } from '@/context/tools';
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/globals/app-sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar/app-sidebar";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/ui/breadcrumb';
+import { Separator } from '@/components/ui/separator';
 
 const FlowLayout = ({ children }: { children: React.ReactNode }) => {
     const { nodes, edges, selectNode, onNodesChange, onEdgesChange, onConnect } = useTools()
@@ -14,9 +16,28 @@ const FlowLayout = ({ children }: { children: React.ReactNode }) => {
     }));
     return (
         <SidebarProvider>
-            <AppSidebar />
-            <SidebarTrigger />
-            <div className='w-screen h-screen'>
+        <AppSidebar />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+            <div className="flex items-center gap-2 px-4">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">
+                      Building Your Application
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+          </header>
+          <div className='w-screen h-screen'>
                 <ReactFlow
                     nodes={nodes}
                     edges={styledEdges}
@@ -31,8 +52,8 @@ const FlowLayout = ({ children }: { children: React.ReactNode }) => {
                     {children}
                 </ReactFlow>
             </div>
-        </SidebarProvider>
-
+        </SidebarInset>
+      </SidebarProvider>
     )
 }
 

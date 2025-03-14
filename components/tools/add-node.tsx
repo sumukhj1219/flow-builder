@@ -8,12 +8,14 @@ export function AddNode() {
     const { addNode } = useTools();
 
     return (
-        <Button 
-            className="w-full px-4 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-x-2"
-            size="lg"
+        <Button
+            variant={'ghost'}
+            size="sm"
             onClick={() => addNode()}
+            className="font-normal"
         >
-            <Plus className="w-4 h-4" /> Add New Node
+            <Plus className="w-4 h-4" />New node
         </Button>
+
     );
 }

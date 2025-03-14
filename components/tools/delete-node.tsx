@@ -8,20 +8,15 @@ const DeleteNode = () => {
     const {deleteNode, selectedNodeId} = useTools()
 
   return (
-    <div>
         <Button 
-            className={`w-full  px-4 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-x-2`}
-            size="lg"
+            size="sm"
             onClick={() => deleteNode()}
-            variant={'destructive'}
-            {
-                ...selectedNodeId ? {disabled:false} : {disabled:true}
-            }
+            variant={selectedNodeId ? 'destructive' : 'ghost'}
+            className="font-normal"
             
         >
             <Trash className="w-4 h-4" /> Delete this node
         </Button>
-    </div>
   )
 }
 
