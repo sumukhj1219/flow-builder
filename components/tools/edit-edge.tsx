@@ -3,34 +3,43 @@
 import React, { useState } from "react";
 import { useTools } from "@/context/tools";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 const EdgeOptionsMenu = () => {
-  const { selectedEdgeId,  deleteEdge, menu } = useTools();
+  const { selectedEdgeId, deleteEdge, updateEdgeLabel, menu, edges } = useTools();
+  const currentLabel = edges.find(edge => edge.id === selectedEdgeId)?.label || "";
+  const [label, setLabel] = useState(currentLabel);
 
-  if (!selectedEdgeId) return null; 
+  if (!selectedEdgeId) return null;
+
+  const handleSave = () => {
+    updateEdgeLabel(label);
+  };
 
   return (
     <div
-      className="absolute bg-white shadow-lg p-4 rounded-md border border-gray-200"
-      style={{ top: menu?.y, left:menu?.x }}
+      className="absolute"
+      style={{ top: menu?.y, left: menu?.x }}
     >
-      <h3 className="font-semibold mb-2">Edge Options</h3>
+      <Card className="w-64 shadow-md border">
+        <CardHeader className="font-semibold text-sm">Edge Options</CardHeader>
+        <CardContent className="space-y-3">
+          <Input
+            type="text"
+            placeholder="Enter edge label"
+            value={label}
+            onChange={(e) => setLabel(e.target.value)}
+          />
 
-      <input
-        type="text"
-        placeholder="Enter edge label"
-        className="w-full border p-2 rounded-md"
-      />
-
-      {/* Buttons */}
-      <div className="flex gap-2 mt-3">
-        <Button size="sm" >
-          Save Label
-        </Button>
-        <Button size="sm" variant="destructive" onClick={() => { deleteEdge() }}>
-          Delete Edge
-        </Button>
-      </div>
+          <div className="flex justify-between">
+            <Button size="sm" onClick={handleSave}>Save</Button>
+            <Button size="sm" variant="destructive" onClick={deleteEdge}>
+              Delete
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 "use client";
 
-import { useContext, createContext, useState, FormEvent } from "react";
+import { useContext, createContext, useState } from "react";
 import { nanoid } from "nanoid";
 import { applyNodeChanges, applyEdgeChanges, NodeChange, EdgeChange, Connection } from "@xyflow/react";
 
@@ -16,12 +16,13 @@ interface EdgeInterface {
   id: string;
   source: string;
   target: string;
-  markerEnd: {type?:string}
+  markerEnd: { type?: string };
+  label?: string;
 }
 
-interface MenuPositionInterface{
-  x:number | string
-  y:number | string
+interface MenuPositionInterface {
+  x: number | string;
+  y: number | string;
 }
 
 interface ToolsContextType {
@@ -36,11 +37,12 @@ interface ToolsContextType {
   setEdges: React.Dispatch<React.SetStateAction<EdgeInterface[]>>;
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
-  onConnect: (connection: Connection) => void; 
-  onEdgeClick: (edge: EdgeInterface)=>void;
+  onConnect: (connection: Connection) => void;
+  onEdgeClick: (edge: EdgeInterface) => void;
   selectedEdgeId: string | null;
-  setMenuPosition: (x:Number, y:Number) => void;
-  deleteEdge: ()=>void;
+  setMenuPosition: (x: number, y: number) => void;
+  deleteEdge: () => void;
+  updateEdgeLabel: (label: string) => void;
   menu: MenuPositionInterface | undefined;
 }
 
@@ -51,7 +53,7 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
   const [edges, setEdges] = useState<EdgeInterface[]>([]);
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
-  const [menu, setMenu] = useState<MenuPositionInterface | undefined>(undefined)
+  const [menu, setMenu] = useState<MenuPositionInterface | undefined>(undefined);
 
   function addNode(type = "default", position = { x: 100, y: 100 }) {
     const newNode: NodeInterface = {
@@ -62,7 +64,7 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
       draggable: true,
     };
     setNodes((prev) => [...prev, newNode]);
-    setSelectedEdgeId(null)
+    setSelectedEdgeId(null);
   }
 
   function deleteNode() {
@@ -70,26 +72,23 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
     setNodes((prev) => prev.filter((node) => node.id !== selectedNodeId));
     setEdges((prev) => prev.filter((edge) => edge.source !== selectedNodeId && edge.target !== selectedNodeId));
     setSelectedNodeId(null);
-    setSelectedEdgeId(null)
+    setSelectedEdgeId(null);
   }
 
   function selectNode(nodeId: string) {
     setSelectedNodeId(nodeId);
     console.log(`Selected Node: ${nodeId}`);
-    setSelectedEdgeId(null)
-
+    setSelectedEdgeId(null);
   }
 
   function onNodesChange(changes: NodeChange[]) {
     setNodes((prev) => applyNodeChanges(changes, prev));
-    setSelectedEdgeId(null)
-
+    setSelectedEdgeId(null);
   }
 
   function onEdgesChange(changes: EdgeChange[]) {
     setEdges((prev) => applyEdgeChanges(changes, prev));
-    setSelectedEdgeId(null)
-
+    setSelectedEdgeId(null);
   }
 
   function onConnect(connection: Connection) {
@@ -99,31 +98,59 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
       id: nanoid(),
       source: connection.source,
       target: connection.target,
-      markerEnd: { type: "arrow" }, 
+      markerEnd: { type: "arrow" },
+      label: "New Edge", // Default label
     };
 
     setEdges((prev) => [...prev, newEdge]);
-    setSelectedEdgeId(null)
-
+    setSelectedEdgeId(null);
   }
 
-  function onEdgeClick( edge: EdgeInterface) {
-    setSelectedEdgeId(edge.id)
+  function onEdgeClick(edge: EdgeInterface) {
+    setSelectedEdgeId(edge.id);
   }
 
-  function setMenuPosition(x:Number, y:Number){
-      console.log(x , y)
-      setMenu({x, y})
+  function setMenuPosition(x: number, y: number) {
+    console.log(x, y);
+    setMenu({ x, y });
   }
 
-  function deleteEdge(){
-    if(!selectedEdgeId) return;
-    setEdges((prev)=>prev.filter((edge)=>edge.id !== selectedEdgeId))
-    setSelectedEdgeId(null)
+  function deleteEdge() {
+    if (!selectedEdgeId) return;
+    setEdges((prev) => prev.filter((edge) => edge.id !== selectedEdgeId));
+    setSelectedEdgeId(null);
+  }
+
+  function updateEdgeLabel(label: string) {
+    if (!selectedEdgeId) return;
+    setEdges((prev) =>
+      prev.map((edge) =>
+        edge.id === selectedEdgeId ? { ...edge, label } : edge
+      )
+    );
   }
 
   return (
-    <ToolsContext.Provider value={{ nodes, edges, addNode, deleteNode, setEdges, selectNode, selectedNodeId, onNodesChange, onEdgesChange, onConnect, onEdgeClick, selectedEdgeId, setMenuPosition, deleteEdge, menu }}>
+    <ToolsContext.Provider
+      value={{
+        nodes,
+        edges,
+        addNode,
+        deleteNode,
+        setEdges,
+        selectNode,
+        selectedNodeId,
+        onNodesChange,
+        onEdgesChange,
+        onConnect,
+        onEdgeClick,
+        selectedEdgeId,
+        setMenuPosition,
+        deleteEdge,
+        updateEdgeLabel,
+        menu,
+      }}
+    >
       {children}
     </ToolsContext.Provider>
   );
