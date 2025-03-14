@@ -5,17 +5,17 @@ import { Plus, Trash } from 'lucide-react'
 import { useTools } from '@/context/tools'
 
 const DeleteNode = () => {
-    const {deleteNode, activeNode} = useTools()
+    const {deleteNode, selectedNodeId} = useTools()
 
   return (
     <div>
         <Button 
-            className="w-full px-4 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-x-2"
+            className={`w-full  px-4 py-2 text-sm font-medium rounded-lg flex items-center justify-center gap-x-2`}
             size="lg"
             onClick={() => deleteNode()}
             variant={'destructive'}
             {
-                ...activeNode ? {disabled:false} : {disabled:true}
+                ...selectedNodeId ? {disabled:false} : {disabled:true}
             }
             
         >
