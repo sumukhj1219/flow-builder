@@ -1,50 +1,9 @@
 "use client";
 
-import { useContext, createContext, useState } from "react";
+import { useContext, createContext, useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { applyNodeChanges, applyEdgeChanges, NodeChange, EdgeChange, Connection } from "@xyflow/react";
-
-interface NodeInterface {
-  id: string;
-  type: string;
-  position: { x: number; y: number };
-  data: { label: string };
-  draggable?: boolean;
-}
-
-interface EdgeInterface {
-  id: string;
-  source: string;
-  target: string;
-  markerEnd: { type?: string };
-  label?: string;
-}
-
-interface MenuPositionInterface {
-  x: number | string;
-  y: number | string;
-}
-
-interface ToolsContextType {
-  nodes: NodeInterface[];
-  edges: EdgeInterface[];
-
-  addNode: (type?: string, position?: { x: number; y: number }) => void;
-  deleteNode: () => void;
-  selectedNodeId: string | null;
-  selectNode: (nodeId: string) => void;
-
-  setEdges: React.Dispatch<React.SetStateAction<EdgeInterface[]>>;
-  onNodesChange: (changes: NodeChange[]) => void;
-  onEdgesChange: (changes: EdgeChange[]) => void;
-  onConnect: (connection: Connection) => void;
-  onEdgeClick: (edge: EdgeInterface) => void;
-  selectedEdgeId: string | null;
-  setMenuPosition: (x: number, y: number) => void;
-  deleteEdge: () => void;
-  updateEdgeLabel: (label: string) => void;
-  menu: MenuPositionInterface | undefined;
-}
+import { EdgeInterface, MenuPositionInterface, NodeInterface, ToolsContextType } from "@/interfaces/interface";
 
 const ToolsContext = createContext<ToolsContextType | undefined>(undefined);
 
@@ -55,11 +14,30 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [menu, setMenu] = useState<MenuPositionInterface | undefined>(undefined);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const savedNodes = localStorage.getItem("nodes");
+    const savedEdges = localStorage.getItem("edges");
+  
+    setNodes(savedNodes ? JSON.parse(savedNodes) : []);  
+    setEdges(savedEdges ? JSON.parse(savedEdges) : []);
+  }, []);
+
+  useEffect(() => {
+    if (nodes.length > 0) {
+      localStorage.setItem("nodes", JSON.stringify(nodes));
+    }
+    if (edges.length > 0) {
+      localStorage.setItem("edges", JSON.stringify(edges));
+    }
+  }, [nodes, edges]);
+  
+
   function addNode(type = "default", position = { x: 100, y: 100 }) {
     const newNode: NodeInterface = {
       id: nanoid(),
       type,
-      position,
+      position: {x:position.x, y:position.y},
       data: { label: `Node : ${nodes.length + 1}` },
       draggable: true,
     };
