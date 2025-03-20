@@ -13,31 +13,57 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null);
   const [menu, setMenu] = useState<MenuPositionInterface | undefined>(undefined);
+  const [historyNodes, setHistoryNodes] = useState<NodeInterface[]>([]);
+  const [historyEdges, setHistoryEdges] = useState<EdgeInterface[]>([]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+  
     const savedNodes = localStorage.getItem("nodes");
     const savedEdges = localStorage.getItem("edges");
-  
-    setNodes(savedNodes ? JSON.parse(savedNodes) : []);  
+    const savedHistoryNodes = localStorage.getItem("historyNodes");
+    const savedHistoryEdges = localStorage.getItem("historyEdges");
+
+    setNodes(savedNodes ? JSON.parse(savedNodes) : []);
     setEdges(savedEdges ? JSON.parse(savedEdges) : []);
+    setHistoryNodes(savedHistoryNodes ? JSON.parse(savedHistoryNodes) : []);
+    setHistoryEdges(savedHistoryEdges ? JSON.parse(savedHistoryEdges) : []);
   }, []);
 
+  const updateHistory = () => {
+    setHistoryNodes((prev) => {
+      const newNodes = nodes.filter((n) => !prev.some((hn) => hn.id === n.id));
+      if (newNodes.length > 0) {
+        const updatedHistory = [...prev, ...newNodes];
+        localStorage.setItem("historyNodes", JSON.stringify(updatedHistory));
+        return updatedHistory;
+      }
+      return prev;
+    });
+
+    setHistoryEdges((prev) => {
+      const newEdges = edges.filter((e) => !prev.some((he) => he.id === e.id));
+      if (newEdges.length > 0) {
+        const updatedHistory = [...prev, ...newEdges];
+        localStorage.setItem("historyEdges", JSON.stringify(updatedHistory));
+        return updatedHistory;
+      }
+      return prev;
+    });
+  };
+
   useEffect(() => {
-    if (nodes.length > 0) {
-      localStorage.setItem("nodes", JSON.stringify(nodes));
-    }
-    if (edges.length > 0) {
-      localStorage.setItem("edges", JSON.stringify(edges));
-    }
+    if (nodes.length > 0) localStorage.setItem("nodes", JSON.stringify(nodes));
+    if (edges.length > 0) localStorage.setItem("edges", JSON.stringify(edges));
+
+    updateHistory(); // Append new elements to history
   }, [nodes, edges]);
-  
 
   function addNode(type = "default", position = { x: 100, y: 100 }) {
     const newNode: NodeInterface = {
       id: nanoid(),
       type,
-      position: {x:position.x, y:position.y},
+      position: { x: position.x, y: position.y },
       data: { label: `Node : ${nodes.length + 1}` },
       draggable: true,
     };
@@ -55,7 +81,6 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
 
   function selectNode(nodeId: string) {
     setSelectedNodeId(nodeId);
-    console.log(`Selected Node: ${nodeId}`);
     setSelectedEdgeId(null);
   }
 
@@ -77,7 +102,7 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
       source: connection.source,
       target: connection.target,
       markerEnd: { type: "arrow" },
-      label: "New Edge", // Default label
+      label: "New Edge",
     };
 
     setEdges((prev) => [...prev, newEdge]);
@@ -89,13 +114,18 @@ export const ToolsProvider = ({ children }: { children: React.ReactNode }) => {
   }
 
   function setMenuPosition(x: number, y: number) {
-    console.log(x, y);
     setMenu({ x, y });
   }
 
   function deleteEdge() {
     if (!selectedEdgeId) return;
-    setEdges((prev) => prev.filter((edge) => edge.id !== selectedEdgeId));
+
+    setEdges((prev) => {
+      const updatedEdges = prev.filter((edge) => edge.id !== selectedEdgeId);
+      localStorage.setItem("edges", JSON.stringify(updatedEdges));
+      return updatedEdges;
+    });
+
     setSelectedEdgeId(null);
   }
 

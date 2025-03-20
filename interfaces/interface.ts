@@ -16,6 +16,11 @@ export interface EdgeInterface {
   label?: string;
 }
 
+export interface ProjectInterface {
+    nodes:NodeInterface[]
+    edges:EdgeInterface[]
+}
+
 export interface MenuPositionInterface {
   x: number | string;
   y: number | string;
